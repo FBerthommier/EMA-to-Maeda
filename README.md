@@ -1,7 +1,7 @@
 # CTW-based Articulatory-to-Acoustic Reproduction Pipeline
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.PLACEHOLDER-blue)](https://doi.org/10.5281/zenodo.PLACEHOLDER)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22961484-blue)](https://doi.org/10.5281/zenodo.22961484)
 
 > **⚠️ FINALIZATION BANNER — TODO-FINALIZATION**
 > This repository accompanies the article *"Assessing a Mathematical Model of
@@ -11,7 +11,7 @@
 > 2479, resubmitted to arXiv). The cross-references between the three
 > repositories are being finalized:
 > - GitHub (this repository): https://github.com/FBerthommier/EMA-to-Maeda
-> - Zenodo archive DOI: `10.5281/zenodo.PLACEHOLDER`
+> - Zenodo archive DOI: `10.5281/zenodo.22961484`
 > - arXiv identifier: `arXiv:XXXX.XXXXX`
 > - Official Interspeech-style reference of the article: *to be inserted*
 > See `docs/FINALIZATION-CHECKLIST.md` for the list of edits to perform once
@@ -176,7 +176,7 @@ to be inserted at finalization) and this archive:
   author  = {Berthommier, Fr{\'e}d{\'e}ric},
   title   = {CTW-based Articulatory-to-Acoustic Reproduction Pipeline},
   year    = {2026},
-  doi     = {10.5281/zenodo.PLACEHOLDER},   % TODO-FINALIZATION
+  doi     = {10.5281/zenodo.22961484},
   license = {MIT}
 }
 ```

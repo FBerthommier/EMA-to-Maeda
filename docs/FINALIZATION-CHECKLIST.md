@@ -7,30 +7,32 @@ identifiers are known.
 
 ## Step 1 — Publish Zenodo first
 
-- [ ] Upload the Zenodo package (see `Zenodo/GUIDE.md`).
-- [ ] Publish and obtain the **Zenodo DOI** (concept DOI preferred).
-- [ ] In Zenodo metadata, add a *related identifier* "isSupplementTo" → GitHub
-      repository URL.
+- [x] Upload the Zenodo package (see `Zenodo/GUIDE.md`).
+- [x] Publish and obtain the **Zenodo DOI**: `10.5281/zenodo.22961484`.
+- [ ] In Zenodo metadata, add a *related identifier* "isSupplementTo" →
+      https://github.com/FBerthommier/EMA-to-Maeda
 
 ## Step 2 — Update GitHub
 
-- [ ] `README.md`: replace every `PLACEHOLDER` in the finalization banner and
-      the DOI badge with the Zenodo DOI; insert the arXiv identifier
-      (`arXiv:XXXX.XXXXX`) and the final repository URL in the clone command.
-- [ ] `CITATION.cff`: replace `doi` with the Zenodo DOI; add the `preferred-citation`
-      entry with the arXiv identifier and the official Interspeech-style
-      reference.
-- [ ] `docs/documentation.tex` / `.pdf`: update the banner and references,
-      recompile the PDF.
-- [ ] `video/README.md` and `docs/mapping.md`: check for remaining `PLACEHOLDER`
-      strings (`grep -r PLACEHOLDER .`).
+- [x] `README.md`: DOI badge, finalization banner and citation BibTeX carry
+      the Zenodo DOI `10.5281/zenodo.22961484`; final repository URL
+      https://github.com/FBerthommier/EMA-to-Maeda in the banner and clone
+      command. (Remaining: the arXiv identifier once submitted.)
+- [x] `CITATION.cff`: `doi` set to the Zenodo DOI; `repository-code` points to
+      GitHub. (Remaining: `preferred-citation` with the arXiv identifier and
+      the official Interspeech-style reference.)
+- [x] `docs/documentation.tex` / `.pdf` and `docs/usage_manual.tex` / `.pdf`:
+      banner carries the GitHub URL and the Zenodo DOI, PDFs recompiled.
+      (Remaining: the arXiv identifier.)
+- [x] No remaining `PLACEHOLDER` strings except the arXiv identifier itself
+      (`grep -r PLACEHOLDER .`).
 
 ## Step 3 — Update the article (arXiv)
 
 - [ ] Add the footnote/acknowledgment block per the official Interspeech model:
       "Code and data available at https://github.com/FBerthommier/EMA-to-Maeda
       (MIT license); complete archive including supplement, figures, videos and
-      simulations archived at Zenodo <DOI>."
+      simulations archived at Zenodo, doi:10.5281/zenodo.22961484."
 - [ ] Add the Zenodo DOI and GitHub URL to the article's *Data availability*
       section if applicable.
 - [ ] Submit to arXiv; obtain the arXiv identifier.

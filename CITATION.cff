@@ -16,8 +16,7 @@ authors:
     affiliation: "Gipsa-Lab, CNRS, University Grenoble Alpes"
 license: MIT
 repository-code: "https://github.com/FBerthommier/EMA-to-Maeda"
-# TODO-FINALIZATION: insert the Zenodo DOI once the deposit is published.
-doi: "10.5281/zenodo.PLACEHOLDER"
+doi: "10.5281/zenodo.22961484"
 version: "0.1.0"
 date-released: "2026-09-24"
 # TODO-FINALIZATION: add the arXiv identifier of the final article, e.g.
