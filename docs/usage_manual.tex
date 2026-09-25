@@ -1,0 +1,376 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{longtable}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,
+        backgroundcolor=\color{gray!8},columns=fullflexible}
+
+\title{\textbf{Usage Manual}\\[4pt]
+\large How to use the refactored pipeline of the GitHub repository\\[2pt]
+\normalsize Companion material of the article ``Assessing a Mathematical Model
+of Syllable Production via CTW Alignment with EMA Data''\\
+by F. Berthommier (Univ.\ Grenoble Alpes, CNRS, Grenoble INP, GIPSA-lab, France)\\
+(Interspeech 2026 submission 2479, resubmitted to arXiv)}
+\author{F. Berthommier -- Gipsa-Lab, CNRS, University Grenoble Alpes}
+\date{September 2026}
+
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{CTW Reproduction Pipeline -- Usage Manual}
+\fancyhead[R]{\thepage}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{Finalization banner.} The cross-references
+between the three repositories (GitHub, Zenodo, arXiv) are being finalized.
+Insert here the Zenodo DOI, the arXiv identifier and the official
+Interspeech-style reference once available
+(see \texttt{docs/FINALIZATION-CHECKLIST.md}).}}
+\end{center}
+
+\section{Purpose and scope}
+This manual describes how to \emph{use} the functions of the repository
+after the refactoring of the original research scripts. Every original
+script of the legacy \texttt{SynthsylShort/} workspace has been split into
+conceptually distinct, individually callable functions, distributed across
+the \texttt{src/}, \texttt{figures/}, \texttt{synthesis/} and
+\texttt{video/} directories, and wired into a master driver,
+\texttt{run\_all.py}, at the repository root. The correspondence between
+the original scripts and the new modules is documented in
+\texttt{docs/mapping.md}; the data-flow dependencies are documented in
+\texttt{docs/PIPELINE.md}.
+
+With this repository, a fresh clone regenerates \emph{all} the numerical
+results of the article and of its supplement from the raw corpus
+(\texttt{data/mat/}, \texttt{data/wav/}): the intermediate articulatory
+and formant tracks, the nine article/supplement figures, the statistical
+analyses (per-parameter correlations, paired $t$-tests with Holm
+correction), a demonstration syllable-synthesis corpus and the MP4
+stimulus videos. An automated test suite
+(\texttt{tests/test\_reproducibility.py}) compares the regenerated values
+against the archived ones and quantifies the reproducibility guarantees
+(Section~\ref{sec:repro}).
+
+\section{Installation}
+Python~$\geq$~3.9 is required. Video reproduction needs \texttt{ffmpeg};
+if it is not installed on your system, the \texttt{imageio-ffmpeg} package
+(included in \texttt{requirements.txt}) provides a bundled binary that the
+pipeline locates automatically.
+\begin{lstlisting}
+git clone <REPOSITORY-URL>        % TODO-FINALIZATION: insert final URL
+cd <repository>
+python -m venv .venv
+.venv\Scripts\activate            % Windows  (Linux/macOS: source .venv/bin/activate)
+pip install -r requirements.txt
+python -m pytest tests/test_reproducibility.py --collect-only   % sanity check
+\end{lstlisting}
+
+\section{The master driver: \texttt{run\_all.py}}
+All stages can be driven from the repository root. Each stage is
+idempotent (outputs already present are skipped; add \texttt{--force} to
+recompute), logged to the console and to
+\texttt{results/logs/run\_all.log}, and stops with a clear message if an
+input directory is missing. All randomness is seeded inside the
+generators (the condition~B model pairing uses seed~126; the LPC
+synthesis reseeds NumPy per stimulus), so runs are deterministic on a
+fixed environment.
+\begin{lstlisting}
+python run_all.py --stage data        % mat/wav -> copyparam, copywav, copyformants
+python run_all.py --stage ctw         % -> paramodelctw(random), modelctw(random)
+python run_all.py --stage figures     % the 8 figure scripts (9 PNGs) + statistics
+python run_all.py --stage synthesis   % demonstration syllable corpus
+python run_all.py --stage videos      % MP4 chain (ffmpeg required)
+python run_all.py --stage all         % everything, in this order
+\end{lstlisting}
+Generators write under \texttt{results/regenerated/data} by default (same
+tree structure as \texttt{data/}); the archived \texttt{data/} directory
+is never modified by the pipeline. Common options:
+\begin{lstlisting}
+--out-root DIR    % where the regenerated data tree is written
+--force           % recompute even if outputs already exist
+\end{lstlisting}
+Measured runtimes (one core): \texttt{data} ${\sim}45$~min,
+\texttt{ctw} ${\sim}75$~min, \texttt{figures} ${\sim}1$~min,
+\texttt{synthesis} ${\sim}15$~s, \texttt{videos} ${\sim}1$~min; the full
+\texttt{--stage all} chain takes about two hours. The dominant cost is
+the VLAM formant synthesis (${\sim}35$~s per stimulus, 63 stimuli, three
+passes across the stages).
+
+\section{Naming conventions}
+All stimuli follow the \texttt{Y0X} rule: $X \in [10,16]$ is the item
+index and reference model number, $Y \in [2,10]$ the speaker/condition
+index; the two-digit $X$ is always the last two characters of the name
+(e.g.\ \texttt{2012}, \texttt{10016}). The archived files are prefixed by
+set:
+\begin{longtable}{p{4.6cm}p{10.5cm}}
+\texttt{CP\_*.npy} & reference (EMA-derived) 6-parameter articulatory tracks, shape $(1000, 6)$;\\
+\texttt{CF\_*.npy} & formant tracks (F1--F3) of the reference-driven VLAM synthesis, shape $(1, 1000, 3)$;\\
+\texttt{CW\_*.wav} & synthesized reference audio (20~kHz, 16-bit PCM);\\
+\texttt{PM\_*.npy} / \texttt{PMR\_*.npy} & CTW-aligned parameter tracks of condition~A / condition~B, shape $(7, 1000)$ (row~6, Hyoid, zeroed);\\
+\texttt{MPF\_*.npy} / \texttt{MPFR\_*.npy} & dictionaries \texttt{\{'fval', 'Pv'\}}: formants $(3, 1000, 1)$ and parameters $(7, 1000)$ of condition~A / condition~B;\\
+\texttt{P0<X>.npy} & Maeda reference model parameters (dictionaries \texttt{\{'fval', 'Pv', 'dur'\}}).
+\end{longtable}
+
+\section{Using the data-generation functions (\texttt{src/})}
+The four generators of the intermediate data sets expose one importable
+function per conceptual operation. They can be used as CLIs (shown first)
+or imported into your own scripts.
+
+\subsection{Raw EMA to reference parameters}
+\begin{lstlisting}
+python src/batch_parameters.py --out-root results/regenerated/data
+\end{lstlisting}
+\begin{itemize}
+\item \texttt{load\_ema\_reduce(mat\_path)} --- load one MATLAB EMA file
+      (\texttt{VV\_*.mat}, shape $(T, 27)$), extract the 14 validated
+      coil channels (X: indices 2--8, Y: 11--17).
+\item \texttt{reduce\_to\_6vars\_mat(data14)} --- reduce the 14 channels
+      to the 6 Maeda-like parameters (Jaw, Body, Dorsum, Tip, LipP,
+      LipH); returns shape $(T, 6)$.
+\item \texttt{zero\_phase\_lowpass\_filter(data)} --- 8~Hz zero-phase
+      (forward--backward) Butterworth low-pass along the last axis.
+\item \texttt{process\_utterance(fname2, fname1, out\_dir=None)} ---
+      complete chain for one utterance: decimation 5:1, filtering,
+      $z$-normalization, renormalization with the mean/standard
+      deviation of model \texttt{P0<X>}, and save as
+      \texttt{CP\_<fname2>.npy}. With \texttt{out\_dir=None} the file is
+      written to the canonical \texttt{data/copyparam/} location.
+\end{itemize}
+
+\subsection{Reference audio and formants (VLAM synthesis)}
+\begin{lstlisting}
+python src/make_reference_tracks.py --names 2012,8015 --out-root results/regenerated/data
+\end{lstlisting}
+\begin{itemize}
+\item \texttt{synthesize\_track(name, copyparam\_dir, wav\_dir)} ---
+      VLAM/LPC synthesis of one stimulus: the 6 reference parameters
+      (Hyoid appended as zero) drive the articulatory model, the energy
+      envelope of the real recording \texttt{vv\_<name>.wav} (Hilbert
+      envelope, 8~Hz low-pass, empirical 0.1 threshold) shapes the
+      glottal excitation. Returns \texttt{(sig, fval)}.
+\item \texttt{save\_track(name, sig, fval, out\_root)} --- write
+      \texttt{CW\_<name>.wav} (20~kHz, PCM\_16, the archived subtype)
+      and \texttt{CF\_<name>.npy} (\texttt{fval.T}).
+\item \texttt{process\_one(name, ..., force=False)} --- synthesize and
+      save one stimulus; skips it if both outputs already exist.
+\end{itemize}
+
+\subsection{CTW alignment, conditions A and B}
+Both conditions share the helpers of \texttt{src/ctw\_tracks.py}:
+\begin{itemize}
+\item \texttt{stimulus\_names()} --- the list of the 63 stimulus names,
+      in the original (X outer, Y inner) loop order.
+\item \texttt{load\_model\_track(x\_index)} --- parameters of model
+      \texttt{P0<X>}, shape $(7, T_1)$.
+\item \texttt{load\_natural\_track(name, copyparam\_dir)} --- natural
+      parameters of one utterance, shape $(6, T_2)$.
+\item \texttt{align\_model\_to\_natural(model\_track, natural\_track)} ---
+      Canonical Time Warping of the model onto the natural track
+      (reconstruction on the $T_2$ time grid, gap interpolation),
+      followed by the 8~Hz zero-phase smoothing; returns the aligned
+      track of shape $(7, T_2)$. This is exactly the computation
+      displayed by the Figure~S1a/S1b scripts.
+\end{itemize}
+The condition scripts wrap these helpers with their pairing rules and
+the shared formant conversion:
+\begin{lstlisting}
+python src/ctw_condition_a.py --names 2012 --out-root results/regenerated/data
+python src/ctw_condition_b.py --names 2012 --out-root results/regenerated/data
+\end{lstlisting}
+\begin{itemize}
+\item \texttt{ctw\_condition\_a.condition\_a\_model\_index(name)} ---
+      condition~A pairs each utterance \texttt{Y0X} with its own model
+      \texttt{P0<X>} ($X$ = last two characters of the name).
+\item \texttt{ctw\_condition\_b.pick\_random\_models(seed=126)} ---
+      condition~B pairing: one \texttt{random.choice} per stimulus among
+      the models $X2 \neq X$, replicating call for call the seeded
+      generator of \texttt{figures/figs1b\_*.py}.
+\item \texttt{generate\_condition\_a\_track(name, copyparam\_dir)} /
+      \texttt{generate\_condition\_b\_track(name, copyparam\_dir)} ---
+      aligned parameter track $(7, T_2)$ of one stimulus.
+\item \texttt{process\_one(name, copyparam\_dir, out\_root, force)} ---
+      align, convert and save the \texttt{PM\_/MPF\_} (condition~A) or
+      \texttt{PMR\_/MPFR\_} (condition~B) pair of files.
+\end{itemize}
+
+\subsection{Parameter-to-formant conversion}
+\begin{itemize}
+\item \texttt{formant\_conversion.convert\_aligned\_parameters\_to\_formants(
+      param\_track)} --- evaluate the VLAM model frame by frame on a
+      $(7, T)$ aligned track (non-finite values cleaned, Hyoid row
+      zeroed) and return the legacy dictionary
+      \texttt{\{'fval': (3, T, 1), 'Pv': (7, T)\}}. This is the exact
+      computation of \texttt{video/vlam\_audio\_maker\_v2.py}, factored
+      out so both condition pipelines and the video chain share it.
+\end{itemize}
+
+\subsection{Low-level analysis helpers}
+\begin{itemize}
+\item \texttt{ctw.apply\_ctw\_path(ref\_ema, target\_ema)} --- CTW path
+      (tslearn) and the aligned reference reconstructed on the target
+      time grid (per-frame averaging, linear interpolation of gaps);
+      returns \texttt{(aligned, path\_matrix)}.
+\item \texttt{correlations.compute\_correlation\_simple(pv1, pv2,
+      labels=None, verbose=False)} --- per-column Pearson correlations
+      computed manually (sample standard deviations, \texttt{ddof=1},
+      matching the original research code); constant columns get~0.
+\item \texttt{stats\_tests.paired\_ttests\_holm(corr\_matrix, indices,
+      param\_names, row\_label)} --- paired $t$-tests between the A/B
+      columns of each parameter with Holm correction
+      ($\alpha = 0.05$); prints the article table and returns the list
+      of result dictionaries (\texttt{mean\_a}, \texttt{t\_stat},
+      \texttt{p\_raw}, \texttt{p\_holm}, \texttt{significant}, \dots).
+\item \texttt{plots.plot\_ctw\_path(path\_matrix, color, ax)} and
+      \texttt{plots.plot\_articulatory\_parameters(...)} --- matplotlib
+      helpers used by the figure scripts.
+\end{itemize}
+
+\section{Reproducing the figures}
+Each figure is generated by one self-documented script reading only the
+archived \texttt{data/} directory (see \texttt{docs/mapping.md} for the
+correspondence with the original research scripts):
+\begin{lstlisting}
+python figures/fig2a_articulatory_correlations.py    % Figure 2a (article)
+python figures/fig2b_formant_correlations.py         % Figure 2b (article)
+python figures/fig3_formant_trajectories.py          % Figure 3  (article)
+python figures/figs1a_ctw_paths_condition_a.py       % Fig. S1a  (supplement)
+python figures/figs1b_ctw_paths_condition_b.py       % Fig. S1b  (supplement)
+python figures/figs3_articulatory_param_trajectories.py  % Fig. S3 (2 PNGs)
+python figures/figs4_ctw_model15_on_model12.py       % Fig. S4  (supplement)
+python figures/figs5_ctw_alignment_three_way.py      % Fig. S5  (supplement)
+\end{lstlisting}
+The nine PNGs are written to \texttt{results/figures/} at 300~dpi, and
+the printed statistical tables (correlations, paired $t$-tests, Holm
+correction) are part of the reproducible record: they must match the
+numbers of the article and the reference file
+\texttt{tests/reference\_stats.json}. Note that the Figure~S1b script
+also (re)saves its aligned tracks into
+\texttt{data/paramodelctwrandom/}; this write is deterministic (seed~126)
+and byte-identical to the archive.
+
+\section{Reproducing the syllable synthesis}
+The \texttt{synthesis/} package refactors the legacy interactive
+synthesizer into twelve modules (configuration, Tau-model trajectories,
+VLAM articulatory model, tube acoustics, LPC synthesis, pipeline,
+input/output). The entry point is a CLI:
+\begin{lstlisting}
+python synthesis/run_synthesis.py --text "ba.du abi" --stem essai
+python synthesis/run_synthesis.py --text "ga.bi" --no-video --no-plots --no-spectrogram
+\end{lstlisting}
+Input words combine the vowels \texttt{u o O a e i y E}, the consonants
+\texttt{b d g}, and dots between syllables. Outputs in
+\texttt{results/synthesis/}: \texttt{<stem>.wav} (20~kHz), \texttt{<stem>.npy}
+(dictionary \texttt{fval}/\texttt{Pv}/\texttt{dur}) and, unless disabled,
+the vocal-tract animation \texttt{output.avi} and the parameter, formant
+and spectrogram plots. Omitting \texttt{--text} enters the interactive
+prompt of the original script. The pipeline reads no data files.
+
+\section{Reproducing the MP4 videos}
+The video chain renders the VLAM midsagittal animation of stimulus
+\texttt{2012} and assembles the article videos. All of it is automated
+by \texttt{python run\_all.py --stage videos}; the individual scripts
+are:
+\begin{lstlisting}
+% Elementary renders (XVID AVI at 100 fps, then ffmpeg audio mux):
+python video/vlam_video_maker.py --source copyparam      --mp4 ../results/videos/CondA.mp4
+python video/vlam_video_maker.py --source modelctwrandom --mp4 ../results/videos/CondB.mp4
+python video/vlam_video_maker.py --source copyparam      --mp4 ../results/videos/CondRef.mp4
+% Compositing chain (each step consumes the previous outputs):
+python video/superpose_condition_a_reference.py    % CondRef + CondA -> mixARef.mp4
+python video/superpose_condition_b_reference.py    % CondRef + CondB -> mixBRef.mp4
+python video/superpose_conditions_a_b.py           % CondA  + CondB  -> mixAB.mp4
+python video/side_by_side_composites.py            % mixARef | mixBRef -> mixABRef.mp4
+\end{lstlisting}
+Every script accepts \texttt{--input-dir}, \texttt{--output-dir} and
+\texttt{--ffmpeg} so the chain can run entirely inside
+\texttt{results/videos/} without touching the archived
+\texttt{data/videos/}. \texttt{video/vlam\_audio\_maker.py} (reference
+synthesis, \texttt{CP\_*} $\to$ \texttt{CW\_/CF\_*}) and
+\texttt{video/vlam\_audio\_maker\_v2.py} (condition~B conversion,
+\texttt{PMR\_*} $\to$ \texttt{MPFR\_*}) remain available with their own
+\texttt{--out-dir} options; the \texttt{src/} generators of
+Section~6 are their pipeline-wired counterparts.
+
+\section{Reproducibility guarantees and tests}
+\label{sec:repro}
+\texttt{tests/test\_reproducibility.py} (pytest, ${\sim}20$~min on one
+core) runs three families of checks on a fixed subsample of five
+stimuli:
+\begin{enumerate}
+\item \textbf{Archive equality.} The generators are compared with the
+      archived data at two levels. \emph{Identity}: fed with the
+      archived \texttt{CP\_*} inputs, the generators reproduce the
+      archives to machine precision (parameters ${\leq}\,4\cdot10^{-14}$,
+      formants ${\leq}\,3\cdot10^{-11}$~Hz, waveforms within 1
+      least-significant bit of the 16-bit PCM). \emph{End-to-end}:
+      restarting from the raw \texttt{data/mat/} corpus, the
+      regenerated parameters deviate by ${\leq}\,2\cdot10^{-5}$ (a
+      NumPy/SciPy-version drift on the float32 EMA reduction, not a
+      methodological difference); the CTW path can then flip on a few
+      near-tie frames, so the tests combine a per-frame maximum
+      tolerance with a bound on the fraction of affected frames
+      (${\leq}\,5\%$ above 0.05 parameter units / 10~Hz; measured
+      maxima ${\leq}\,2.8\%$). All tolerances are documented in the
+      test file and justified in \texttt{docs/PIPELINE.md}.
+\item \textbf{Statistics.} The Figure~2a/2b analyses recomputed from
+      \texttt{data/} (means, standard deviations, $t$-statistics,
+      raw and Holm-corrected $p$-values, significance flags) must match
+      \texttt{tests/reference\_stats.json} to $10^{-9}$. That file is
+      produced once by \texttt{tests/generate\_reference\_stats.py}.
+\item \textbf{Figures.} Each of the eight figure scripts must run and
+      produce a non-empty PNG.
+\end{enumerate}
+\begin{lstlisting}
+python -m pytest tests/ -q                  % full suite (~20 min)
+python -m pytest tests/ -q -k statistics    % statistics only (~10 s)
+python tests/generate_reference_stats.py    % regenerate the reference numbers
+\end{lstlisting}
+
+\section{Repository layout}
+\begin{longtable}{p{4.2cm}p{10.5cm}}
+\texttt{run\_all.py} & Master driver of the five stages.\\
+\texttt{data/} & All data: \texttt{mat/} raw EMA (Kasper et al.,
+third-party license); \texttt{wav/}, \texttt{copywav/} audio;
+\texttt{maeda/} model parameters; \texttt{copyparam/},
+\texttt{copyformants/} reference tracks; \texttt{paramodelctw(random)/},
+\texttt{modelctw(random)}/ CTW products; \texttt{videos/} archived MP4s.\\
+\texttt{src/} & Reusable library (CTW, correlations, statistics, plots)
+and the intermediate-data generators of Section~6.\\
+\texttt{figures/} & One script per article/supplement figure.\\
+\texttt{synthesis/} & Short-syllable synthesis package.\\
+\texttt{video/} & Audio/video stimulus makers and compositing chain.\\
+\texttt{tests/} & Reproducibility test suite and reference statistics.\\
+\texttt{docs/} & This manual, \texttt{documentation.pdf},
+\texttt{PIPELINE.md} (data-flow map), \texttt{mapping.md} (script
+correspondence), finalization checklist.\\
+\texttt{results/} & Outputs regenerated by the scripts (not tracked):
+\texttt{figures/}, \texttt{videos/}, \texttt{synthesis/},
+\texttt{regenerated/data/}, \texttt{logs/}.\\
+\end{longtable}
+
+\section{Licenses and citation}
+Code, figures, documentation and videos: MIT (Berthommier, Gipsa-Lab).
+EMA data: MIT third party, attributed to Kasper et al.\
+(\texttt{LICENSES/LICENSE-EMA-data.md}); the data were kindly transmitted
+to the author personally by the authors of that publication (personal
+communication, 2026). See \texttt{CITATION.cff}. \textbf{TODO-FINALIZATION:}
+insert the Zenodo DOI, the arXiv identifier and the official
+Interspeech-style reference once the three deposits are finalized.
+
+\section*{References}
+\begin{enumerate}
+\item J.~Kasper, C.~A.~Kell, P.~Perrier,
+``An informational account of anticipatory coarticulation -- theoretical
+considerations and empirical plausibility'',
+\emph{Journal of Neurolinguistics}, vol.~78, p.~101298, 2026.
+\texttt{doi:10.1016/j.jneuroling.2025.101298}.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,19 @@
+numpy
+scipy
+matplotlib
+statsmodels
+scikit-learn
+tslearn
+pandas
+imageio
+opencv-python
+soundfile
+sounddevice
+librosa
+
+# Reproducibility test suite (python -m pytest tests/)
+pytest
+
+# Optional: bundled ffmpeg binary for the video stage (run_all.py
+# --stage videos) when ffmpeg is not available on the PATH
+imageio-ffmpeg
