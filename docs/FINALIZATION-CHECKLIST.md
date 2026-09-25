@@ -28,9 +28,9 @@ identifiers are known.
 ## Step 3 — Update the article (arXiv)
 
 - [ ] Add the footnote/acknowledgment block per the official Interspeech model:
-      "Code and data available at <GitHub URL> (MIT license); complete archive
-      including supplement, figures, videos and simulations archived at Zenodo
-      <DOI>."
+      "Code and data available at https://github.com/FBerthommier/EMA-to-Maeda
+      (MIT license); complete archive including supplement, figures, videos and
+      simulations archived at Zenodo <DOI>."
 - [ ] Add the Zenodo DOI and GitHub URL to the article's *Data availability*
       section if applicable.
 - [ ] Submit to arXiv; obtain the arXiv identifier.

@@ -15,6 +15,7 @@ authors:
     given-names: Frédéric
     affiliation: "Gipsa-Lab, CNRS, University Grenoble Alpes"
 license: MIT
+repository-code: "https://github.com/FBerthommier/EMA-to-Maeda"
 # TODO-FINALIZATION: insert the Zenodo DOI once the deposit is published.
 doi: "10.5281/zenodo.PLACEHOLDER"
 version: "0.1.0"

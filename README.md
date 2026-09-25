@@ -10,7 +10,7 @@
 > (Interspeech 2026 submission
 > 2479, resubmitted to arXiv). The cross-references between the three
 > repositories are being finalized:
-> - GitHub (this repository): current URL
+> - GitHub (this repository): https://github.com/FBerthommier/EMA-to-Maeda
 > - Zenodo archive DOI: `10.5281/zenodo.PLACEHOLDER`
 > - arXiv identifier: `arXiv:XXXX.XXXXX`
 > - Official Interspeech-style reference of the article: *to be inserted*
@@ -67,8 +67,8 @@ repository is documented in `docs/mapping.md`.
 Requires Python ≥ 3.9.
 
 ```bash
-git clone <THIS-REPO-URL>   # TODO-FINALIZATION: insert final GitHub URL
-cd <repo-name>
+git clone https://github.com/FBerthommier/EMA-to-Maeda
+cd EMA-to-Maeda
 python -m venv .venv && .venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
