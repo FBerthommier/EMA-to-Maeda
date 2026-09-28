@@ -39,9 +39,10 @@ identifiers are known.
       (doi:10.48550/arXiv.2609.31508). The identifier is inserted in the
       README banner, `CITATION.cff` (preferred-citation) and both compiled
       documents of `docs/`.
-- [ ] Back-link: add "isIdenticalTo → doi:10.48550/arXiv.2609.31508" as a
-      related identifier in Zenodo (the arXiv ID is already mentioned in the
-      GitHub README banner).
+- [x] Related identifiers in Zenodo metadata, both as **"isSupplementTo"**
+      (the deposit is supplementary material to both targets):
+      "isSupplementTo" → https://github.com/FBerthommier/EMA-to-Maeda and
+      "isSupplementTo" → doi:10.48550/arXiv.2609.31508.
 
 ## Step 4 — Final consistency pass
 
