@@ -35,9 +35,13 @@ identifiers are known.
       simulations archived at Zenodo, doi:10.5281/zenodo.22961484."
 - [ ] Add the Zenodo DOI and GitHub URL to the article's *Data availability*
       section if applicable.
-- [ ] Submit to arXiv; obtain the arXiv identifier.
-- [ ] Back-link: add "isIdenticalTo → arXiv:XXXX.XXXXX" as a related identifier
-      in Zenodo; mention the arXiv ID in the GitHub README banner.
+- [x] Submit to arXiv; obtain the arXiv identifier: **arXiv:2609.31508**
+      (doi:10.48550/arXiv.2609.31508). The identifier is inserted in the
+      README banner, `CITATION.cff` (preferred-citation) and both compiled
+      documents of `docs/`.
+- [ ] Back-link: add "isIdenticalTo → doi:10.48550/arXiv.2609.31508" as a
+      related identifier in Zenodo (the arXiv ID is already mentioned in the
+      GitHub README banner).
 
 ## Step 4 — Final consistency pass
 

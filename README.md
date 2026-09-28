@@ -3,19 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22961484-blue)](https://doi.org/10.5281/zenodo.22961484)
 
-> **⚠️ FINALIZATION BANNER — TODO-FINALIZATION**
-> This repository accompanies the article *"Assessing a Mathematical Model of
-> Syllable Production via CTW Alignment with EMA Data"* by Frédéric Berthommier
-> (Univ. Grenoble Alpes, CNRS, Grenoble INP, GIPSA-lab, France)
-> (Interspeech 2026 submission
-> 2479, resubmitted to arXiv). The cross-references between the three
-> repositories are being finalized:
+> This repository is the companion of the article *"Assessing a Mathematical
+> Model of Syllable Production via CTW Alignment with EMA Data"* by Frédéric
+> Berthommier (Univ. Grenoble Alpes, CNRS, Grenoble INP, GIPSA-lab, France),
+> available as **arXiv:2609.31508** (doi:10.48550/arXiv.2609.31508).
+> Companion archives:
 > - GitHub (this repository): https://github.com/FBerthommier/EMA-to-Maeda
 > - Zenodo archive DOI: `10.5281/zenodo.22961484`
-> - arXiv identifier: `arXiv:XXXX.XXXXX`
-> - Official Interspeech-style reference of the article: *to be inserted*
-> See `docs/FINALIZATION-CHECKLIST.md` for the list of edits to perform once
-> the two identifiers are known.
+> - arXiv: [arXiv:2609.31508](https://arxiv.org/abs/2609.31508)
 
 This repository reproduces **all figures of the article and its supplement**,
 the **syllable synthesis pipeline**, and the **MP4 stimulus videos**, from the
